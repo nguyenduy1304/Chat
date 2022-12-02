@@ -1,0 +1,90 @@
+﻿@using ChatBox.Models
+@{
+    ViewBag.Title = "Home Page";
+    string URL = String.Concat(Request.Url.Scheme, "://", Request.Url.Host, (Request.Url.IsDefaultPort ? "" : String.Concat(":", Request.Url.Port)));
+}
+
+<h2>Zalo Followers</h2>
+<p>Nhập Token: </p>
+<input type="text" id="txttoken" />
+
+<p>Nhập offset: </p>
+<input type="text" id="txtoffset" />
+
+<p>Nhập count: </p>
+<input type="text" id="txtcount" />
+<p>@ViewBag.Messeger</p>
+<p></p>
+
+<div class="btn-group">
+    <a class="btn btn-success" onclick="SaveObject()">Xem thông tin</a>
+</div>
+
+<table style="width:100%">
+    <tr>
+        <th>User_ID</th>
+        <th>Link Avatar</th>
+        <th>Name</th>
+        <th>Giới tính</th>
+    </tr>
+    @foreach (ZaloUser item in Model)
+    {
+        <tr>
+            <td>@item.User_ID</td>
+            <td>@item.Avatar</td>
+            <td>@item.Name</td>
+            @if (item.Gender == 1)
+            {
+                <td>Nam</td>
+
+            }
+            else if (item.Gender == 2)
+            {
+                <td>Nữ</td>
+
+            }
+            else
+            {
+                <td>Chưa xát định</td>
+            }
+        </tr>
+    }
+
+
+</table>
+
+
+<script>
+    function SaveObject() {
+        var token = document.getElementById('txttoken').value;
+        var offset = document.getElementById('txtoffset').value;
+        var count = document.getElementById('txtcount').value;
+        if (token.length == 0 || offset.length == 0 || count.length == 0) {
+            alert("Chưa nhập đủ thông tin");
+        }
+        else {
+            var form = new FormData();
+            form.append('token', token);
+            form.append('offset', offset);
+            form.append('count', count);
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "@URL/Home/ZaloFollowers", true);
+            xhr.timeout = 30000;
+            xhr.ontimeout = function () {
+                alert('Hệ thống tạm thời không khả dụng! Thử lại sau ít phút.');
+            }
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    HideLoad();
+                    var ms = JSON.parse(xhr.responseText);
+                    if (ms.Data.status == "OK") {
+                        alert(ms.Data.message);
+                    } else {
+                        alert("Thao tác không thành công");
+                    }
+                }
+            }
+            xhr.send(form);
+        }
+    }
+</script>
